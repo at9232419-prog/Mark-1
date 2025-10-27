@@ -1,56 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Hub - Chat, Text, Image</title>
-  <style>
-    body { font-family: Arial; text-align: center; background: #111; color: #fff; }
-    .box { margin: 20px; padding: 20px; background: #222; border-radius: 10px; }
-    input, textarea { width: 80%; padding: 10px; border-radius: 5px; }
-    button { padding: 10px 20px; margin: 10px; background: #00c3ff; border: none; border-radius: 5px; }
-    img { margin-top: 20px; border-radius: 10px; }
-  </style>
+  <meta charset="utf-8" />
+  <title>Simple AI Chat</title>
 </head>
 <body>
-  <h1>🤖 AI Hub</h1>
-  <div class="box">
-    <h2>Chatbot</h2>
-    <input id="chatInput" placeholder="Ask me anything..." />
-    <button onclick="chat()">Send</button>
-    <p id="chatReply"></p>
-  </div>
+  <h2>AI Chat</h2>
+  <form id="chatForm">
+    <input type="text" id="message" placeholder="Type message..." required />
+    <button type="submit">Send</button>
+  </form>
 
-  <div class="box">
-    <h2>Text Generator</h2>
-    <textarea id="textPrompt" placeholder="Write a topic..."></textarea>
-    <button onclick="textgen()">Generate</button>
-    <p id="textOutput"></p>
-  </div>
+  <h3>Reply:</h3>
+  <div id="reply"></div>
 
-  <div class="box">
-    <h2>Image Generator</h2>
-    <input id="imgPrompt" placeholder="Describe an image..." />
-    <button onclick="imagegen()">Generate Image</button>
-    <div id="imageOutput"></div>
-  </div>
+  <hr>
+  <h3>Image generation</h3>
+  <form id="imgForm">
+    <input type="text" id="imgPrompt" placeholder="Image prompt..." required />
+    <button type="submit">Generate Image</button>
+  </form>
+  <div id="imageResult"></div>
 
-  <script>
-    async function chat() {
-      const res = await fetch('/chat', { method: 'POST', body: new URLSearchParams({ message: chatInput.value }) });
-      const data = await res.json();
-      chatReply.innerText = data.reply;
-    }
+<script>
+document.getElementById('chatForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('message').value;
+  const res = await fetch('/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'message=' + encodeURIComponent(msg)
+  });
+  const data = await res.json();
+  if (data.reply) document.getElementById('reply').innerText = data.reply;
+  else document.getElementById('reply').innerText = 'Error: ' + (data.error || 'unknown');
+});
 
-    async function textgen() {
-      const res = await fetch('/textgen', { method: 'POST', body: new URLSearchParams({ prompt: textPrompt.value }) });
-      const data = await res.json();
-      textOutput.innerText = data.text;
-    }
-
-    async function imagegen() {
-      const res = await fetch('/imagegen', { method: 'POST', body: new URLSearchParams({ prompt: imgPrompt.value }) });
-      const data = await res.json();
-      imageOutput.innerHTML = `<img src="${data.image_url}" width="512" />`;
-    }
-  </script>
+document.getElementById('imgForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const prompt = document.getElementById('imgPrompt').value;
+  const res = await fetch('/imagegen', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'prompt=' + encodeURIComponent(prompt)
+  });
+  const data = await res.json();
+  if (data.image_url) {
+    document.getElementById('imageResult').innerHTML = '<img src="' + data.image_url + '" width="300" />';
+  } else {
+    document.getElementById('imageResult').innerText = 'Error: ' + (data.error || 'unknown');
+  }
+});
+</script>
 </body>
 </html>
