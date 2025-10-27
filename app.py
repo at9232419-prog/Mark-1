@@ -32,7 +32,7 @@ def chat():
 @app.route("/generate", methods=["POST"])
 def generate():
     try:
-        prompt = request.form["prompt"
+        prompt = request.form["prompt"]
         image = client.images.generate(
             model="gpt-image-1",
             prompt=prompt
