@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# ✅ OpenAI client initialize
+# ✅ Initialize OpenAI client (new syntax)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route("/")
@@ -17,7 +17,7 @@ def chat():
     try:
         user_input = request.form["user_input"]
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",  # ✅ latest model
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": user_input}
@@ -28,16 +28,16 @@ def chat():
     except Exception as e:
         return f"Error: {str(e)}"
 
-# ✅ Image generation route
+# ✅ Image generation route (new OpenAI API format)
 @app.route("/generate", methods=["POST"])
 def generate():
     try:
         prompt = request.form["prompt"]
-        image = client.images.generate(
+        result = client.images.generate(
             model="gpt-image-1",
             prompt=prompt
         )
-        image_url = image.data[0].url
+        image_url = result.data[0].url
         return f"<img src='{image_url}' width='300'>"
     except Exception as e:
         return f"Error: {str(e)}"
