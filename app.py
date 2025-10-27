@@ -3,7 +3,8 @@ from openai import OpenAI
 
 app = Flask(__name__)
 
-client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
+# Initialize OpenAI client
+client = OpenAI(api_key="YOUR_API_KEY")
 
 @app.route('/')
 def home():
