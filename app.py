@@ -1,49 +1,46 @@
+from flask import Flask, render_template, request
+from openai import OpenAI
 import os
-from flask import Flask, render_template, request, jsonify
-import openai
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(__name__)
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+# ✅ OpenAI client initialize
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-@app.route('/')
+@app.route("/")
 def home():
-    return open("index.html").read()
+    return render_template("index.html")
 
-@app.route('/chat', methods=['POST'])
+# ✅ Chat route
+@app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.form.get('message', '') or request.json.get('message', '')
-    if not user_input:
-        return jsonify({"error": "No message provided"}), 400
-
     try:
-        resp = openai.ChatCompletion.create(
+        user_input = request.form["user_input"]
+        completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_input}],
-            max_tokens=300
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_input}
+            ]
         )
-        reply = resp['choices'][0]['message']['content'].strip()
-        return jsonify({"reply": reply})
+        reply = completion.choices[0].message.content
+        return f"Reply: {reply}"
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error: {str(e)}"
 
-
-@app.route('/imagegen', methods=['POST'])
-def imagegen():
-    prompt = request.form.get('prompt', '') or request.json.get('prompt', '')
-    if not prompt:
-        return jsonify({"error": "No prompt provided"}), 400
+# ✅ Image generation route
+@app.route("/generate", methods=["POST"])
+def generate():
     try:
-        img = openai.Image.create(
-            prompt=prompt,
-            n=1,
-            size="512x512"
+        prompt = request.form["prompt"
+        image = client.images.generate(
+            model="gpt-image-1",
+            prompt=prompt
         )
-        url = img['data'][0]['url']
-        return jsonify({"image_url": url})
+        image_url = image.data[0].url
+        return f"<img src='{image_url}' width='300'>"
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    app.run(host="0.0.0.0", port=5000)
