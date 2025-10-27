@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify
-import openai
+from openai import OpenAI
 
 app = Flask(__name__)
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 
 @app.route('/')
 def home():
@@ -12,7 +12,7 @@ def home():
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.form['message']
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": user_input}]
     )
@@ -21,7 +21,7 @@ def chat():
 @app.route('/textgen', methods=['POST'])
 def textgen():
     prompt = request.form['prompt']
-    response = openai.Completion.create(
+    response = client.completions.create(
         model="text-davinci-003",
         prompt=prompt,
         max_tokens=200
@@ -31,8 +31,12 @@ def textgen():
 @app.route('/imagegen', methods=['POST'])
 def imagegen():
     prompt = request.form['prompt']
-    image = openai.Image.create(prompt=prompt, n=1, size="512x512")
-    return jsonify({"image_url": image['data'][0]['url']})
+    image = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        size="512x512"
+    )
+    return jsonify({"image_url": image.data[0].url})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10000)
